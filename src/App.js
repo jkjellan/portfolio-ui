@@ -22,7 +22,12 @@ class App extends Component {
         new THREE.SphereGeometry( 5, 50, 50 ),
         new THREE.ShaderMaterial({
           vertexShader,
-          fragmentShader
+          fragmentShader,
+          uniforms: {
+            globeTexture: {
+              value: new THREE.TextureLoader().load(earth)
+            }
+          }
         }) 
       );
 
