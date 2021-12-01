@@ -1,13 +1,22 @@
 import React, { Component } from "react";
 import * as THREE from "three";
-import earth from "./earth.jpeg";
+import earthTexture from "./earth.jpeg";
+
 import vertexShader from './shaders/vertex.glsl';
 import fragmentShader from './shaders/fragment.glsl';
+import atmosphereVertexShader from './shaders/atmosphereVertex.glsl';
+import atmosphereFragmentShader from './shaders/atmosphereFragment.glsl';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.threeJsMountRef = React.createRef();
+    this.state = {
+      mouse: {
+        x: null,
+        y: null
+      }
+    }
   }
   componentDidMount() {
       // === THREE.JS CODE START ===
@@ -24,16 +33,31 @@ class App extends Component {
           vertexShader,
           fragmentShader,
           uniforms: {
-            globeTexture: {
-              value: new THREE.TextureLoader().load(earth)
+            earthTexture: {
+              value: new THREE.TextureLoader().load(earthTexture)
             }
           }
         }) 
       );
 
-      console.log(sphere)
       scene.add( sphere );
-      camera.position.z = 10;
+
+      // sphere for atmosphere shader
+      var atmosphere = new THREE.Mesh( 
+        new THREE.SphereGeometry( 5, 50, 50 ),
+        new THREE.ShaderMaterial({
+          vertexShader: atmosphereVertexShader,
+          fragmentShader: atmosphereFragmentShader,
+          blending: THREE.AdditiveBlending,
+          side: THREE.BackSide
+        }) 
+      );
+
+      atmosphere.scale.set(1.2, 1.2, 1.2)
+
+      scene.add( atmosphere );
+
+      camera.position.z = 15;
       var animate = function () {
         requestAnimationFrame( animate );
         //sphere.rotation.x += 0.01;
@@ -42,9 +66,21 @@ class App extends Component {
       };
       animate();
       // === THREE.JS EXAMPLE CODE END ===
+
+      window.addEventListener('mousemove', () => {
+        const mouse = {
+          x: undefined,
+          y: undefined
+        };
+        
+        mouse.x = (window.event.clientX / window.innerWidth) * 2 - 1
+        mouse.y = -(window.event.clientY / window.innerHeight) * 2 + 1
+        this.setState({mouse: mouse})
+      });
   }
 
   render() {
+    console.log(this.state.mouse)
     return (
       <div ref={(thisDiv) => {this.threeJsMountDiv = thisDiv}}/>
     )
